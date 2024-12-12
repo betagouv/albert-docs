@@ -19,6 +19,11 @@ const moduleExports = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
   //output: "export",
   webpack: (config) => {
     config.module.rules.push({
