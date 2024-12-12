@@ -20,7 +20,7 @@ const moduleExports = {
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   reactStrictMode: true,
   swcMinify: true,
-  output: "export",
+  //output: "export",
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(woff2|webmanifest)$/,

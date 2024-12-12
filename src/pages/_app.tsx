@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { NuqsAdapter } from "nuqs/adapters/next/pages";
 
 import { createEmotionSsrAdvancedApproach } from "tss-react/next";
 import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesdir";
@@ -77,36 +78,36 @@ const homeLinkPops = {
 };
 
 const bottomLinks = [
-  {
-    text: "Conditions d'utilisation",
-    linkProps: {
-      href: "/cgu",
-    },
-  },
-  {
-    text: "Statistiques",
-    linkProps: {
-      href: "/stats",
-    },
-  },
-  {
-    text: "Budget",
-    linkProps: {
-      href: "/budget",
-    },
-  },
-  {
-    text: "Politique de confidentialité",
-    linkProps: {
-      href: "/politique-confidentialite",
-    },
-  },
-  {
-    text: "Aide",
-    linkProps: {
-      href: "/aide",
-    },
-  },
+  // {
+  //   text: "Conditions d'utilisation",
+  //   linkProps: {
+  //     href: "/cgu",
+  //   },
+  // },
+  // {
+  //   text: "Statistiques",
+  //   linkProps: {
+  //     href: "/stats",
+  //   },
+  // },
+  // {
+  //   text: "Budget",
+  //   linkProps: {
+  //     href: "/budget",
+  //   },
+  // },
+  // {
+  //   text: "Politique de confidentialité",
+  //   linkProps: {
+  //     href: "/politique-confidentialite",
+  //   },
+  // },
+  // {
+  //   text: "Aide",
+  //   linkProps: {
+  //     href: "/aide",
+  //   },
+  // },
   {
     text: "Contribuer sur GitHub",
     linkProps: {
@@ -128,7 +129,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <MuiDsfrThemeProvider>
       <Head>
-        <title>Template | beta.gouv.fr</title>
+        <title>Albert-docs demo | beta.gouv.fr</title>
         {contentSecurityPolicy && (
           <meta
             httpEquiv="Content-Security-Policy"
@@ -136,7 +137,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           ></meta>
         )}
         <link rel="icon" href="/favicon.ico" />
-        <meta name="description" content="Template Next.js beta.gouv.fr" />
+        <meta name="description" content="Albert docs demo" />
       </Head>
       <SkipLinks
         links={[
@@ -156,8 +157,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
       />
       <Header
         brandTop={brandTop}
-        serviceTitle="Nom du service numérique"
-        serviceTagline="Description du service numérique"
+        serviceTitle="Albert-docs demo"
+        serviceTagline="Interroger des documents avec l'IA Albert"
         homeLinkProps={homeLinkPops}
         navigation={[
           {
@@ -167,26 +168,26 @@ const Layout = ({ children }: { children: ReactNode }) => {
             },
             isActive: router.asPath === "/",
           },
+          // {
+          //   text: "DSFR playground",
+          //   linkProps: {
+          //     href: "/dsfr",
+          //   },
+          //   isActive: router.asPath === "/dsfr",
+          // },
+          // {
+          //   text: "Mui playground",
+          //   linkProps: {
+          //     href: "/mui",
+          //   },
+          //   isActive: router.asPath === "/mui",
+          // },
           {
-            text: "DSFR playground",
+            text: "A propos",
             linkProps: {
-              href: "/dsfr",
+              href: "/a-propos",
             },
-            isActive: router.asPath === "/dsfr",
-          },
-          {
-            text: "Mui playground",
-            linkProps: {
-              href: "/mui",
-            },
-            isActive: router.asPath === "/mui",
-          },
-          {
-            text: "Article",
-            linkProps: {
-              href: "/article",
-            },
-            isActive: router.asPath === "/article",
+            isActive: router.asPath === "/a-propos",
           },
         ]}
         quickAccessItems={[headerFooterDisplayItem]}
@@ -200,16 +201,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <Footer
         brandTop={brandTop}
         accessibility="non compliant"
-        contentDescription={`
-    Ce message est à remplacer par les informations de votre site.
-
-    Comme exemple de contenu, vous pouvez indiquer les informations 
-    suivantes : Le site officiel d’information administrative pour les entreprises.
-                `}
         homeLinkProps={homeLinkPops}
         license={`Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous licence ${pkg.license}`}
-        accessibilityLinkProps={{ href: "/accessibilite" }}
-        termsLinkProps={{ href: "/mentions-legales" }}
+        //accessibilityLinkProps={{ href: "/accessibilite" }}
+        //termsLinkProps={{ href: "/mentions-legales" }}
         bottomItems={[...bottomLinks, headerFooterDisplayItem]}
       />
     </MuiDsfrThemeProvider>
@@ -234,7 +229,9 @@ function App({ Component, pageProps }: AppProps) {
     >
       <Layout>
         {/*@ts-ignore*/}
-        <Component {...pageProps} />
+        <NuqsAdapter>
+          <Component {...pageProps} />
+        </NuqsAdapter>
       </Layout>
     </div>
   );
