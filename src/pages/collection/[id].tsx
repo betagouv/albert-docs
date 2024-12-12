@@ -11,6 +11,13 @@ import { useDropzone } from "react-dropzone";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import {
+  useAlbertCollections,
+  getSearch,
+  addFileToCollection,
+  getPromptWithRagResults,
+} from "../../lib/albert";
+
 const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
 const API_URL = "/api/albert"; //https://albert.api.etalab.gouv.fr";
 const LANGUAGE_MODEL = "AgentPublic/llama3-instruct-8b"; // see https://albert.api.etalab.gouv.fr/v1/models
@@ -18,6 +25,7 @@ const EMBEDDING_MODEL = "BAAI/bge-m3";
 
 import { mdxComponents } from "../../../mdx-components";
 import { cp } from "fs";
+import pAll from "p-all";
 
 // const albertApi = ({
 //   path,
@@ -91,28 +99,25 @@ function MyDropzone({ children, onDrop }) {
   );
 }
 
-export function Chat({ messages, handleSubmit, handleInputChange, input }) {
+export function Chat({
+  messages,
+  handleSubmit,
+  handleInputChange,
+  input,
+  isLoading,
+  hintText,
+}) {
   return (
-    <div style={{ width: "100%", marginBottom: 30 }}>
+    <div style={{ width: "100%", marginBottom: 40 }}>
       <div style={{ height: "100%", minHeight: 300 }}>
         {messages.map((m) => (
           <div key={m.id} className={fr.cx("fr-mb-2w")}>
             {m.role === "user" ? (
-              <>
-                <i
-                  className={fr.cx("fr-icon--md", "ri-user-fill", "fr-mr-1w")}
-                />
-              </>
+              <i className={fr.cx("fr-icon--md", "ri-user-fill", "fr-mr-1w")} />
             ) : (
-              <>
-                <i
-                  className={fr.cx(
-                    "fr-icon--md",
-                    "ri-robot-2-fill",
-                    "fr-mr-1w"
-                  )}
-                />
-              </>
+              <i
+                className={fr.cx("fr-icon--md", "ri-robot-2-fill", "fr-mr-1w")}
+              />
             )}
             <Markdown
               components={mdxComponents}
@@ -123,15 +128,17 @@ export function Chat({ messages, handleSubmit, handleInputChange, input }) {
             </Markdown>
           </div>
         ))}
+        {isLoading && <div className={fr.cx("fr-mb-2w")}>...</div>}
       </div>
 
       <form onSubmit={handleSubmit}>
         <Input
           //className={fr.cx("fr-input-group")} //fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
           style={{ width: "100%" }}
+          hintText={hintText}
           label=""
           nativeInputProps={{
-            defaultValue: input,
+            value: input,
             placeholder: "Posez une question à Albert",
             onChange: handleInputChange,
           }}
@@ -142,73 +149,27 @@ export function Chat({ messages, handleSubmit, handleInputChange, input }) {
   );
 }
 
-const createCollection = ({ name, model = EMBEDDING_MODEL }) =>
-  fetch(`${API_URL}/v1/collections`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name, model }),
-  })
-    .then((r) => r.json())
-    .then((d) => {
-      console.log(d);
-      return d;
-    })
-    .then((d) => d.id);
-
-const addFileToCollection = async ({ file, fileName, collectionId }) => {
-  const formData = new FormData();
-  formData.append("file", file, fileName);
-  formData.append("request", JSON.stringify({ collection: collectionId }));
-  return fetch(`${API_URL}/v1/files`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
-      //"Content-Type": "multipart/form-data",
-    },
-    body: formData,
-  }).then(async (r) => {
-    console.log(r);
-    return r.text();
-  });
-};
-
-const getSearch = ({
-  collections,
-  query,
-}: {
-  collections: string[];
-  query: string;
-}) => {
-  console.log({ url: `${API_URL}/v1/search`, query });
-  return fetch(`${API_URL}/v1/search`, {
-    cache: "no-cache",
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ collections, k: 6, prompt: query }),
-  })
-    .then((r) => {
-      console.log(r);
-      return r.json();
-    })
-    .catch((r) => {
-      console.error(r);
-      throw r;
-    });
-};
-
 const CollectionPage: NextPage<{ collectionId: string }> = ({
   collectionId,
 }) => {
   const { query } = useRouter();
-  //const [collections] = useAlbertCollections();
-  //const [currentCollectionId, setCurrentCollectionId] = useQueryState("name");
-  //console.log("Page", collections);
+
+  // store message overrides to update messages status
+  const [messagesOverrides, setMessagesOverrides] = useState<
+    Record<string, any>
+  >({});
+
+  const { collections, reloadCollections } = useAlbertCollections();
+  const collection = collections.find((c) => c.id === collectionId);
+
+  //console.log("collection", collection);
+
+  const overrideMessage = (id: string, data: any) => {
+    setMessagesOverrides((o) => ({
+      ...o,
+      [id]: data,
+    }));
+  };
   console.log("router", query, collectionId);
   const uuid = query.id;
   const onDrop = async (acceptedFiles: File[]) => {
@@ -221,43 +182,68 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
 
     console.log("collectionId", collectionId);
 
-    setMessages((messages) => [
-      ...messages,
-      {
-        role: "assistant",
-        id: "upload-" + Math.random(),
-        content: `Je traite les fichiers : ${acceptedFiles.map(
-          (f) => f.name
-        )}...`,
-      },
-    ]);
+    await pAll(
+      acceptedFiles.map((file) => async () => {
+        const uploadId = "upload-" + Math.random();
+        setMessages((messages) => [
+          ...messages,
+          {
+            role: "assistant",
+            id: uploadId,
+            content: `Je traite le fichier : ${file.name}... ⏳`,
+          },
+        ]);
+        const uploaded = await addFileToCollection({
+          file,
+          fileName: file.name,
+          collectionId,
+        });
+        console.log("uploaded", uploaded);
 
-    //addFileToCollection
-    acceptedFiles.forEach(async (file) => {
-      await addFileToCollection({ file, fileName: file.name, collectionId });
-    });
-
-    setMessages((messages) => [
-      ...messages,
-      {
-        role: "assistant",
-        id: "upload-" + Math.random(),
-        content: `C'est tout bon, je suis prêt :)`,
-      },
-    ]);
+        if (uploaded.detail) {
+          overrideMessage(uploadId, {
+            content: `Souci avec le fichier : ${file.name}: ${uploaded.detail} ❌`,
+          });
+        } else {
+          overrideMessage(uploadId, {
+            content: `J'ai traité le fichier : ${file.name}... ✅`,
+          });
+        }
+      })
+    );
+    reloadCollections();
   };
 
   const myHandleSubmit = async (event) => {
+    event.preventDefault();
     console.log("myHandleSubmit", event, input);
-    //getSearch;
     // get relevant RAG informations
-    const data = undefined;
     const searchResults = await getSearch({
       collections: [collectionId],
       query: input,
     });
     console.log("searchResults", searchResults);
-    handleSubmit(event);
+
+    const prompt = getPromptWithRagResults({ input, results: searchResults });
+
+    console.log("prompt", prompt);
+
+    const ragId = "rag-" + Math.random();
+
+    // we need to override the displayed message so the user dont see the real prompt
+    overrideMessage(ragId, {
+      content: input,
+    });
+
+    setTimeout(() => {
+      // TODO: hack to prevent non overriden message to show up
+      append({
+        id: ragId,
+        role: "user",
+        content: prompt,
+      });
+      setInput("");
+    });
   };
 
   const {
@@ -266,7 +252,9 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
     handleInputChange,
     handleSubmit,
     setMessages,
+    setInput,
     isLoading,
+    append,
   } = useChat({
     api: `${API_URL}/v1/chat/completions`,
     headers: {
@@ -281,10 +269,11 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
         role: "assistant",
         id: "initial",
         content:
-          "Bonjour, déposez des fichiers dans cette fenêtre et j'essaierai de répondre à vos questions",
+          "Déposez des fichiers PDF, Markdown, HTML ou JSON et j'essaierai de répondre à vos questions.",
       },
     ],
     onResponse: async (message) => {
+      console.log("onResponse", message);
       const m = await message.json();
 
       setMessages((messages) => [
@@ -297,21 +286,35 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
       ]);
     },
   });
+  console.log({
+    fixed: messages.map((m) => ({
+      ...m,
+      ...(messagesOverrides[m.id]?.data || {}),
+    })),
+    messages,
+    messagesOverrides,
+  });
   return (
-    <>
-      <div className="fr-container">
-        <MyDropzone onDrop={onDrop}>
-          <div className={fr.cx("fr-grid-row")}>
-            <Chat
-              messages={messages}
-              input={input}
-              handleInputChange={handleInputChange}
-              handleSubmit={myHandleSubmit}
-            />
-          </div>
-        </MyDropzone>
-      </div>
-    </>
+    <div className="fr-container">
+      <MyDropzone onDrop={onDrop}>
+        <div className={fr.cx("fr-grid-row")}>
+          <Chat
+            isLoading={isLoading}
+            messages={messages.map((m) => ({
+              ...m,
+              ...(messagesOverrides[m.id] || {}),
+            }))}
+            input={input}
+            handleInputChange={handleInputChange}
+            handleSubmit={myHandleSubmit}
+            hintText={
+              collection &&
+              `Albert cherchera parmi les ${collection.documents} documents de votre collection "${collection.name}"`
+            }
+          />
+        </div>
+      </MyDropzone>
+    </div>
   );
 };
 
