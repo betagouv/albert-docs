@@ -1,81 +1,44 @@
-import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
-import type { NextPage } from "next";
-import React, { useCallback, useEffect, useState } from "react";
+import React, {
+  ReactChildren,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useState,
+} from "react";
+import type {
+  NextPage,
+  InferGetServerSidePropsType,
+  GetServerSideProps,
+} from "next";
 import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
-import { Table } from "@codegouvfr/react-dsfr/Table";
 import { Input } from "@codegouvfr/react-dsfr/Input";
-import { useQueryState } from "nuqs";
-import { useChat } from "ai/react";
+import { useChat, UseChatHelpers } from "ai/react";
 import { useDropzone } from "react-dropzone";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import pAll from "p-all";
 
 import {
   useAlbertCollections,
   getSearch,
   addFileToCollection,
   getPromptWithRagResults,
+  ALBERT_API_KEY,
+  API_URL,
+  LANGUAGE_MODEL,
 } from "../../lib/albert";
 
-const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
-const API_URL = "/api/albert"; //https://albert.api.etalab.gouv.fr";
-const LANGUAGE_MODEL = "AgentPublic/llama3-instruct-8b"; // see https://albert.api.etalab.gouv.fr/v1/models
-const EMBEDDING_MODEL = "BAAI/bge-m3";
-
 import { mdxComponents } from "../../../mdx-components";
-import { cp } from "fs";
-import pAll from "p-all";
 
-// const albertApi = ({
-//   path,
-//   method = "POST",
-//   body,
-// }: {
-//   path: string;
-//   method?: "POST" | "GET";
-//   body?: string;
-// }) =>
-//   fetch(`${API_URL}/v1${path}`, {
-//     method,
-//     headers: {
-//       // Authorization: `Bearer ${ALBERT_API_KEY}`,
-//       "Content-Type": "application/json",
-//     },
-//     body,
-//   }).then((r) => r.json());
-
-// type AlbertCollection = {
-//   id: string;
-//   name: string;
-//   type: "public" | "private";
-//   model: "string"; // "BAAI/bge-m3";
-//   user: string;
-//   description: string;
-//   created_at: number;
-//   documents: null | number;
-// };
-
-// const useAlbertCollections = () => {
-//   const [collections, setCollections] = useState<AlbertCollection[]>([]);
-//   const loadCollections = async () => {
-//     const collections = await albertApi({
-//       path: "/collections",
-//       method: "GET",
-//     });
-//     return collections;
-//   };
-//   useEffect(() => {
-//     loadCollections().then((res) => {
-//       setCollections(res.data);
-//     });
-//   }, []);
-//   return [collections];
-// };
-
-function MyDropzone({ children, onDrop }) {
-  const onDropFiles = useCallback((acceptedFiles) => {
-    console.log("acceptedFiles", acceptedFiles);
+function MyDropzone({
+  children,
+  onDrop,
+}: {
+  children: ReactNode;
+  onDrop: (arg: File[]) => void;
+}) {
+  const onDropFiles = useCallback((acceptedFiles: File[]) => {
     // Do something with the files
     onDrop(acceptedFiles);
   }, []);
@@ -89,8 +52,7 @@ function MyDropzone({ children, onDrop }) {
       ? fr.colors.decisions.background.actionLow.blueFrance.default
       : "transparent",
   };
-  if (isDragActive) {
-  }
+
   return (
     <div {...getRootProps()} style={style} className={fr.cx("fr-p-1w")}>
       <input {...getInputProps()} />
@@ -106,6 +68,13 @@ export function Chat({
   input,
   isLoading,
   hintText,
+}: {
+  messages: UseChatHelpers["messages"];
+  handleSubmit: UseChatHelpers["handleSubmit"];
+  handleInputChange: UseChatHelpers["handleInputChange"];
+  input: UseChatHelpers["input"];
+  isLoading: UseChatHelpers["isLoading"];
+  hintText: string;
 }) {
   return (
     <div style={{ width: "100%", marginBottom: 40 }}>
@@ -162,26 +131,13 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
   const { collections, reloadCollections } = useAlbertCollections();
   const collection = collections.find((c) => c.id === collectionId);
 
-  //console.log("collection", collection);
-
   const overrideMessage = (id: string, data: any) => {
     setMessagesOverrides((o) => ({
       ...o,
       [id]: data,
     }));
   };
-  console.log("router", query, collectionId);
-  const uuid = query.id;
   const onDrop = async (acceptedFiles: File[]) => {
-    console.log("onDrop", acceptedFiles, uuid);
-
-    // let collectionId = await createCollection({
-    //   name: uuid,
-    // });
-    // if (!collectionId) collectionId = uuid;
-
-    console.log("collectionId", collectionId);
-
     await pAll(
       acceptedFiles.map((file) => async () => {
         const uploadId = "upload-" + Math.random();
@@ -198,7 +154,6 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
           fileName: file.name,
           collectionId,
         });
-        console.log("uploaded", uploaded);
 
         if (uploaded.detail) {
           overrideMessage(uploadId, {
@@ -216,17 +171,13 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
 
   const myHandleSubmit = async (event) => {
     event.preventDefault();
-    console.log("myHandleSubmit", event, input);
     // get relevant RAG informations
     const searchResults = await getSearch({
       collections: [collectionId],
       query: input,
     });
-    console.log("searchResults", searchResults);
 
     const prompt = getPromptWithRagResults({ input, results: searchResults });
-
-    console.log("prompt", prompt);
 
     const ragId = "rag-" + Math.random();
 
@@ -273,7 +224,6 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
       },
     ],
     onResponse: async (message) => {
-      console.log("onResponse", message);
       const m = await message.json();
 
       setMessages((messages) => [
@@ -286,14 +236,7 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
       ]);
     },
   });
-  console.log({
-    fixed: messages.map((m) => ({
-      ...m,
-      ...(messagesOverrides[m.id]?.data || {}),
-    })),
-    messages,
-    messagesOverrides,
-  });
+
   return (
     <div className="fr-container">
       <MyDropzone onDrop={onDrop}>
@@ -319,11 +262,6 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
 };
 
 export const getServerSideProps = (async (req) => {
-  // Fetch data from external API
-  //const res = await fetch('https://api.github.com/repos/vercel/next.js')
-  //const repo: Repo = await res.json()
-  // Pass data to the page via props
-
   return {
     props: {
       collectionId: Array.isArray(req.query.id)

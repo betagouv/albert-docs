@@ -1,13 +1,22 @@
-import { Readable } from "stream";
 import type { NextApiRequest, NextApiResponse } from "next";
+
+import { ALBERT_API_KEY } from "../../../lib/albert";
+
+const API_URL = "https://albert.api.etalab.gouv.fr"; // this is the real API endpoint
 
 type ResponseData = {
   message: string;
 };
 
-const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
-const API_URL = "https://albert.api.etalab.gouv.fr";
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "20mb",
+    },
+  },
+};
 
+// this proxies requests to albert API
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
@@ -28,8 +37,6 @@ export default async function handler(
   //   }`
   //);
 
-  console.log("io");
-
   const fetchOptions = {
     method: req.method,
     headers: {
@@ -40,6 +47,7 @@ export default async function handler(
   if (req.headers["content-type"]) {
     fetchOptions.headers["Content-Type"] = req.headers["content-type"];
   }
+
   const body =
     req.method === "GET"
       ? undefined
@@ -47,33 +55,25 @@ export default async function handler(
       ? JSON.stringify(req.body)
       : req.body;
   fetchOptions.body = body;
-  // const formData = new FormData();
-  // formData.append("file", req.bod, fileName);
-  // formData.append("request", JSON.stringify({ collection: collectionId }));
-  console.log("fetchOptions", fetchOptions);
 
-  const albertApi = await fetch(
+  const albertApiResponse = await fetch(
     `${API_URL}/${
       data.query.path &&
       Array.isArray(data.query.path) &&
       data.query.path.join("/")
     }`,
     fetchOptions
-  );
+  ).catch((e) => {
+    console.log("e", e);
+    res.status(500).write(e.message);
+  });
 
-  // const resBlob = await response.blob();
-  // const resBufferArray = await resBlob.arrayBuffer();
-  // const resBuffer = Buffer.from(resBufferArray);
+  // allow streaming
+  const reader =
+    albertApiResponse &&
+    albertApiResponse.body &&
+    albertApiResponse.body.getReader();
 
-  // const fileType = await fileTypeFromBuffer(resBuffer);
-  // res.setHeader("Content-Type", fileType?.mime ?? "application/octet-stream");
-  // res.setHeader("Content-Length", resBuffer.length);
-  // res.write(resBuffer, "binary");
-  // res.end();
-
-  // omitting handler code for readability
-
-  const reader = albertApi.body && albertApi.body.getReader();
   while (reader && true) {
     const result = await reader.read();
     if (result.done) {
@@ -82,24 +82,4 @@ export default async function handler(
     }
     res.write(result.value);
   }
-  ///const readableStream = albertApi.body as unknown as NodeJS.ReadableStream;
-  //readableStream.pipe(res);
-  // const body = await albertApi.text();
-  // console.log("body", body);
-  // res
-  //   .status(200)
-  //   //.setHeader("content-type", albertApi.headers["content-type"])
-  //   .send(body);
-
-  // if (albertApi.body) {
-  //   Readable.fromWeb(albertApi.body).pipe(res);
-  // }
-
-  //albertApi.body?.pipeTo(res);
-  //res.status(200).pipe(albertApi);
-  //.json(await albertApi.json());
-  // .then((data) => {
-  //   res.status(200).json({ message: "Hello from Next.js!", ...data });
-  // });
 }
-//

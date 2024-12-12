@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
-const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
-const API_URL = "/api/albert"; //https://albert.api.etalab.gouv.fr";
-const LANGUAGE_MODEL = "AgentPublic/llama3-instruct-8b"; // see https://albert.api.etalab.gouv.fr/v1/models
-const EMBEDDING_MODEL = "BAAI/bge-m3";
+export const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
+export const API_URL = "/api/albert"; //https://albert.api.etalab.gouv.fr";
+export const LANGUAGE_MODEL = "AgentPublic/llama3-instruct-8b"; // see https://albert.api.etalab.gouv.fr/v1/models
+export const EMBEDDING_MODEL = "BAAI/bge-m3";
 
 export const albertApi = ({
   path,
@@ -17,7 +17,7 @@ export const albertApi = ({
   fetch(`${API_URL}/v1${path}`, {
     method,
     headers: {
-      // Authorization: `Bearer ${ALBERT_API_KEY}`,
+      Authorization: `Bearer ${ALBERT_API_KEY}`,
       "Content-Type": "application/json",
     },
     body,
@@ -55,7 +55,13 @@ export const useAlbertCollections = () => {
   return { collections, reloadCollections };
 };
 
-export const createCollection = ({ name, model = EMBEDDING_MODEL }) =>
+export const createCollection = ({
+  name,
+  model = EMBEDDING_MODEL,
+}: {
+  name: string;
+  model?: string;
+}) =>
   fetch(`${API_URL}/v1/collections`, {
     method: "POST",
     headers: {
@@ -71,7 +77,15 @@ export const createCollection = ({ name, model = EMBEDDING_MODEL }) =>
     })
     .then((d) => d.id);
 
-export const addFileToCollection = async ({ file, fileName, collectionId }) => {
+export const addFileToCollection = async ({
+  file,
+  fileName,
+  collectionId,
+}: {
+  file: File;
+  fileName: string;
+  collectionId: string;
+}) => {
   const formData = new FormData();
   formData.append("file", file, fileName);
   formData.append("request", JSON.stringify({ collection: collectionId }));
@@ -91,7 +105,7 @@ export const addFileToCollection = async ({ file, fileName, collectionId }) => {
       };
     }
     if (r.statusText === "OK") {
-      let json = {};
+      let json: { detail?: string } = {};
       try {
         json = await r.json();
       } catch (e) {}
@@ -139,6 +153,16 @@ export const getSearch = ({
 export const getPromptWithRagResults = ({
   results,
   input,
+}: {
+  input: string;
+  results: {
+    data: {
+      chunk: {
+        content: string;
+        metadata: { title: string; document_name: string };
+      };
+    }[];
+  };
 }) => `Réponds à la question suivante au format markdown sans mettre de titre et en te basant sur le contexte fourni uniquement.
 
   ## Question: ${input}

@@ -1,24 +1,25 @@
-import type { MDXComponents } from "mdx/types";
-import Image, { ImageProps } from "next/image";
 import Link from "next/link";
 
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Table } from "@codegouvfr/react-dsfr/Table";
 import { fr } from "@codegouvfr/react-dsfr";
+import { ReactNode } from "react";
+import { MDXComponents } from "mdx/types";
 
 export const mdxComponents = {
-  h1: ({ children }) => <h1 className={fr.cx("fr-h1")}>{children}</h1>,
-  h2: ({ children }) => (
+  h1: ({ children }: { children: ReactNode }) => (
+    <h1 className={fr.cx("fr-h1")}>{children}</h1>
+  ),
+  h2: ({ children }: { children: ReactNode }) => (
     <h2 className={fr.cx("fr-mt-3w", "fr-h2")}>{children}</h2>
   ),
-  h3: ({ children }) => (
+  h3: ({ children }: { children: ReactNode }) => (
     <h3 className={fr.cx("fr-mt-3w", "fr-h3")}>{children}</h3>
   ),
-  h4: ({ children }) => (
+  h4: ({ children }: { children: ReactNode }) => (
     <h4 className={fr.cx("fr-mt-3w", "fr-h4")}>{children}</h4>
   ),
-  // @ts-ignore
-  table: (props) => {
+  table: (props: { children: ReactNode }) => {
     if (
       props.children &&
       Array.isArray(props.children) &&
@@ -35,18 +36,16 @@ export const mdxComponents = {
     }
     return <div></div>;
   },
-  a: (props) => {
+  a: (props: { href: string }) => {
     if (
       props.href &&
       (props.href?.startsWith("http") || props.href?.startsWith("//"))
     ) {
-      //@ts-ignore
       return <Link {...props} target="_blank" rel="noopener noreferrer" />;
     }
-    //@ts-ignore
     return <Link {...props} />;
   },
-  blockquote: (props) => {
+  blockquote: (props: { children: ReactNode }) => {
     if (
       props.children &&
       Array.isArray(props.children) &&
