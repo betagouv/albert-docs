@@ -1,7 +1,7 @@
 import NextErrorComponent, { ErrorProps as NextErrorProps } from "next/error";
 import { NextPageContext } from "next";
-
 import * as Sentry from "@sentry/nextjs";
+import Error from "next/error";
 
 export type ErrorPageProps = {
   err: Error;
@@ -55,7 +55,7 @@ MyError.getInitialProps = async (
   //    componentDidMount, etc) that was caught by Next.js's React Error
   //    Boundary. Read more about what types of exceptions are caught by Error
   //    Boundaries: https://reactjs.org/docs/error-boundaries.html
-
+  await Sentry.captureUnderscoreErrorException(props);
   if (err) {
     Sentry.captureException(err);
 

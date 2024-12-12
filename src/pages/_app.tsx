@@ -18,6 +18,8 @@ import { init } from "@socialgouv/matomo-next";
 
 import pkg from "../../package.json";
 
+import "./styles.css";
+
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
   interface RegisterLink {
     Link: typeof Link;

@@ -18,7 +18,14 @@ export default async function handler(
     headers: req.headers,
     body: req.body,
   };
-  //console.log(data);
+  // console.log(data);
+  // console.log(
+  //   `${API_URL}/${
+  //     data.query.path &&
+  //     Array.isArray(data.query.path) &&
+  //     data.query.path.join("/")
+  //   }`
+  //);
   const albertJson = await fetch(
     `${API_URL}/${
       data.query.path &&
@@ -31,9 +38,12 @@ export default async function handler(
         Authorization: `Bearer ${ALBERT_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: (req.method === "POST" && req.body) || undefined,
+      body: (req.method === "POST" && JSON.stringify(req.body)) || undefined,
     }
-  ).then((r) => r.json());
+  ).then((r) => {
+    console.log(r);
+    return r.json();
+  });
 
   res.status(200).json(albertJson);
   // .then((data) => {

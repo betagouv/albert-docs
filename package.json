@@ -37,7 +37,7 @@
     "@mui/x-data-grid": "^5.17.26",
     "@mui/x-date-pickers": "^5.0.20",
     "@next/mdx": "^14.2.20",
-    "@sentry/nextjs": "^7.120.1",
+    "@sentry/nextjs": "^8",
     "@socialgouv/matomo-next": "^1.9.2",
     "ai": "^4.0.14",
     "dayjs": "^1.11.13",
@@ -46,8 +46,11 @@
     "nuqs": "^2.2.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.3.5",
+    "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
-    "tss-react": "^4.9.14"
+    "tss-react": "^4.9.14",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

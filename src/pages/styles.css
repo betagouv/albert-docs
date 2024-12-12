@@ -1,0 +1,8 @@
+.chat-markdown,
+.chat-markdown p {
+    display: inline ; 
+}
+
+.chat-markdown p {
+    margin-bottom: 20px;
+}

@@ -4,20 +4,12 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
-const SENTRY_ENV = process.env.SENTRY_ENV || process.env.NEXT_PUBLIC_SENTRY_ENV;
-
 Sentry.init({
-  dsn: SENTRY_DSN ?? "",
-  environment: SENTRY_ENV ?? "development",
-  // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: 0.1,
+  dsn: "https://5097055d921644e7b8899c37d9e90780@sentry.incubateur.net/159",
 
-  // remove healthz probes
-  beforeSendTransaction: (event, hint) => {
-    if (event?.request?.url?.endsWith("/healthz")) {
-      return null;
-    }
-    return event;
-  },
+  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+  tracesSampleRate: 1,
+
+  // Setting this option to true will print useful information to the console while you're setting up Sentry.
+  debug: false,
 });
