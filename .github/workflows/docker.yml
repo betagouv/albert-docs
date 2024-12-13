@@ -3,7 +3,7 @@ name: 📦 Docker Image Build & Push
 on:
   push:
     branches:
-      - "**"
+      - "main"
 
 jobs:
   docker:

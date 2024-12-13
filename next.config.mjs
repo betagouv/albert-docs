@@ -19,6 +19,7 @@ const moduleExports = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   reactStrictMode: true,
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
