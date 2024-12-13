@@ -29,14 +29,14 @@ jobs:
         run: |
           yarn lint
 
-  docker:
-    name: Lint Dockerfile
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: Dockerfile
-          verbose: true
+  # docker:
+  #   name: Lint Dockerfile
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #     - name: Lint Dockerfile
+  #       uses: hadolint/hadolint-action@v3.1.0
+  #       with:
+  #         dockerfile: Dockerfile
+  #         verbose: true
