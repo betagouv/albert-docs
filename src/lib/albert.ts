@@ -94,14 +94,14 @@ export const addFileToCollection = async ({
     },
     body: formData,
   }).then(async (r) => {
-    //console.log(r);
+    console.log("addFileToCollection", r.status, r.statusText);
     if (r.status !== 200) {
       console.log("Cannot upload document", r.statusText);
       return {
         detail: r.statusText,
       };
     }
-    if (r.statusText === "OK") {
+    if (r.statusText === "OK" || r.statusText === "") {
       let json: { detail?: string } = {};
       try {
         json = await r.json();
