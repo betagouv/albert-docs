@@ -29,6 +29,6 @@ jobs:
             ${{ github.ref_name == 'main' && format('ghcr.io/{0}/albert-docs:latest', env.GITHUB_REPOSITORY_OWNER_PART_SLUG) || '' }}
           cache-from: type=registry,ref=ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs:${{ env.GITHUB_REF_SLUG }}
           cache-to: type=inline
-          build-args:
-            PRODUCTION: "true"
-            GITHUB_SHA: ${{ github.sha }}
+          build-args: |
+            PRODUCTION="true"
+            GITHUB_SHA=${{ github.sha }}
