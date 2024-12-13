@@ -38,10 +38,13 @@ function MyDropzone({
   children: ReactNode;
   onDrop: (arg: File[]) => void;
 }) {
-  const onDropFiles = useCallback((acceptedFiles: File[]) => {
-    // Do something with the files
-    onDrop(acceptedFiles);
-  }, []);
+  const onDropFiles = useCallback(
+    (acceptedFiles: File[]) => {
+      // Do something with the files
+      onDrop(acceptedFiles);
+    },
+    [onDrop]
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onDropFiles,
     noClick: true,
@@ -74,7 +77,7 @@ export function Chat({
   handleInputChange: UseChatHelpers["handleInputChange"];
   input: UseChatHelpers["input"];
   isLoading: UseChatHelpers["isLoading"];
-  hintText: string;
+  hintText?: string;
 }) {
   return (
     <div style={{ width: "100%", marginBottom: 40 }}>
@@ -89,6 +92,7 @@ export function Chat({
               />
             )}
             <Markdown
+              // @ts-ignore TODO
               components={mdxComponents}
               className="chat-markdown"
               remarkPlugins={[remarkGfm]}
@@ -169,7 +173,7 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
     reloadCollections();
   };
 
-  const myHandleSubmit = async (event) => {
+  const myHandleSubmit = async (event: any) => {
     event.preventDefault();
     // get relevant RAG informations
     const searchResults = await getSearch({

@@ -59,6 +59,7 @@ export const mdxComponents = {
 
 // customize how MDX components are rendered - use DSFR components when possible
 export function useMDXComponents(components: MDXComponents): MDXComponents {
+  // @ts-ignore TODO
   return {
     ...mdxComponents,
     ...components,
