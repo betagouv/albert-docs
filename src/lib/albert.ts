@@ -36,22 +36,19 @@ type AlbertCollection = {
 
 export const useAlbertCollections = () => {
   const [collections, setCollections] = useState<AlbertCollection[]>([]);
-  const loadCollections = async () => {
+
+  const reloadCollections = async () => {
     const collections = await albertApi({
       path: "/collections",
       method: "GET",
     });
-    return collections;
+    setCollections(collections.data || []);
   };
+
   useEffect(() => {
     reloadCollections();
-  }, []);
+  }, [reloadCollections]);
 
-  const reloadCollections = () => {
-    loadCollections().then((res) => {
-      setCollections(res.data);
-    });
-  };
   return { collections, reloadCollections };
 };
 
