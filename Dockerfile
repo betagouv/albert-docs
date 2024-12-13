@@ -22,17 +22,11 @@ ENV NEXT_PUBLIC_BASE_PATH ""
 
 WORKDIR /app
 
-RUN yarn postinstall # if you have postinstall script in your package.json
 RUN if [ -z "$PRODUCTION" ]; then \
     echo "Overriding .env for staging"; \
     cp .env.staging .env.production; \
     fi && \
     yarn build
-
-# Production image, copy all the files and run nginx
-FROM ghcr.io/socialgouv/docker/nginx:sha-1d70757 AS runner
-
-COPY --from=builder /app/out /usr/share/nginx/html
 
 # Disable nextjs telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
