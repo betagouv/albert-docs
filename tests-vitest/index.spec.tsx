@@ -6,6 +6,6 @@ import React from "react";
 test("Has index page", () => {
   render(<Page />);
   expect(
-    screen.getByRole("heading", { level: 1, name: "Template" })
+    screen.getByRole("heading", { level: 1, name: "albert-docs" })
   ).toBeDefined();
 });
