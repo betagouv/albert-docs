@@ -46,7 +46,9 @@ export const useAlbertCollections = () => {
   };
 
   useEffect(() => {
-    reloadCollections();
+    if (!collections.length) {
+      reloadCollections();
+    }
   }, [reloadCollections]);
 
   return { collections, reloadCollections };
@@ -115,7 +117,7 @@ export const addFileToCollection = async ({
       return json;
     }
     return {
-      detail: "plop",
+      detail: "erreur",
     };
   });
 };
