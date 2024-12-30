@@ -54,6 +54,6 @@ RUN \
 
 # static production image
 
-FROM nginx:1.27.3-alpine
+FROM ghcr.io/socialgouv/docker/nginx:8.2.3
 
 COPY --from=builder /app/out /usr/share/nginx/html/
