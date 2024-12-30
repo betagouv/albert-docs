@@ -152,22 +152,31 @@ export const getPromptWithRagResults = ({
     data: {
       chunk: {
         content: string;
-        metadata: { title: string; document_name: string };
+        metadata: {
+          title: string;
+          document_name: string;
+          collection_id: string;
+        };
       };
     }[];
   };
-}) => `Réponds à la question suivante au format markdown sans mettre de titre et en te basant sur le contexte fourni uniquement.
+}) => {
+  return `Réponds à la question suivante en utilisant un format markdown bien lisible et en te basant sur le contexte fourni uniquement. Cite tes sources en conclusion 
 
-  ## Question: ${input}
+## Question: ${input}
           
-  ## Contexte
+## Contexte
           
-  ${results.data
-    .map(
-      (hit) => `${hit.chunk.metadata.title} ${hit.chunk.metadata.document_name} 
-          
-  ${hit.chunk.content}
-          `
-    )
-    .join("\n")}
-          `;
+${results.data
+  .map(
+    (hit) => `[${
+      (hit.chunk.metadata.title &&
+        hit.chunk.metadata.title.replace(/^#+/, "")) ||
+      hit.chunk.metadata.document_name
+    }](https://espace-membre.incubateur.net/doc/${
+      hit.chunk.metadata.collection_id
+    }/${hit.chunk.metadata.document_name})
+${hit.chunk.content}\n\n`
+  )
+  .join("\n")}`;
+};
