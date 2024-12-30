@@ -12,7 +12,7 @@ import {
   createCollection,
   AlbertCollection,
 } from "../lib/albert";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 
 import { InputAlbertToken } from "../components/InputAlbertToken";
 
