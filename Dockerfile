@@ -40,8 +40,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN if [ -z "$PRODUCTION" ]; then \
     echo "Overriding .env for staging"; \
     cp .env.staging .env.production; \
-    fi && \
-    yarn build
+    fi
 
 
 RUN \

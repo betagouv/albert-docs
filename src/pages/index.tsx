@@ -61,8 +61,9 @@ const Home: NextPage = () => {
               background
               desc={`Ajouter des fichiers et les intérroger`}
               linkProps={{
-                href: `#not`,
-                onClick: async () => {
+                href: `/`,
+                onClick: async (e) => {
+                  e.preventDefault();
                   const name = prompt("Nom de la collection à créer ?");
                   if (name) {
                     const collectionId = await createCollection({
@@ -74,7 +75,18 @@ const Home: NextPage = () => {
                 },
               }}
               size="small"
-              title={"Nouveau"}
+              title={
+                <>
+                  <i
+                    className={fr.cx(
+                      "fr-icon--lg",
+                      "fr-icon-add-circle-fill",
+                      "fr-mr-1w"
+                    )}
+                  ></i>
+                  Nouveau
+                </>
+              }
               titleAs="h3"
             />
             {collections
