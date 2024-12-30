@@ -30,7 +30,7 @@ const CollectionCard = ({ collection }: { collection: AlbertCollection }) => (
       </>
     }
     linkProps={{
-      href: `/collection?id=${collection.id}`,
+      href: `/collection.html?id=${collection.id}`,
     }}
     size="small"
     title={collection.name}
@@ -69,7 +69,8 @@ const Home: NextPage = () => {
                       name,
                       token: albertApiKey,
                     });
-                    router && router.push(`/collection?id=${collectionId}`);
+                    router &&
+                      router.push(`/collection.html?id=${collectionId}`);
                   }
                 },
               }}
