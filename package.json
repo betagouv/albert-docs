@@ -6,9 +6,10 @@
   "engines": {
     "node": ">=18 || >=20"
   },
+  "type": "module",
   "scripts": {
     "predev": "only-include-used-icons && cp -a node_modules/@gouvfr/dsfr-chart/Charts ./public/",
-    "prebuild": "node -r @swc-node/register scripts/prebuild.ts && yarn only-include-used-icons && cp -a node_modules/@gouvfr/dsfr-chart/Charts ./public/",
+    "prebuild": "node scripts/prebuild.mjs && yarn only-include-used-icons && cp -a node_modules/@gouvfr/dsfr-chart/Charts ./public/ && yarn type-check",
     "only-include-used-icons": "node node_modules/@codegouvfr/react-dsfr/bin/only-include-used-icons.js",
     "dev": "next dev",
     "build": "next build",
@@ -51,6 +52,7 @@
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
     "tss-react": "^4.9.14",
+    "usehooks-ts": "^3.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

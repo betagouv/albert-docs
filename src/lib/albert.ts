@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export const ALBERT_API_KEY = process.env.ALBERT_API_KEY;
-export const API_URL = "/api/albert"; //https://albert.api.etalab.gouv.fr";
+export const API_URL = "https://albert-api.kube-dev.incubateur.net"; //https://albert.api.etalab.gouv.fr"; // "/api/albert"
 export const LANGUAGE_MODEL = "AgentPublic/llama3-instruct-8b"; // see https://albert.api.etalab.gouv.fr/v1/models
 export const EMBEDDING_MODEL = "BAAI/bge-m3";
 
@@ -9,21 +9,23 @@ export const albertApi = ({
   path,
   method = "POST",
   body,
+  token = ALBERT_API_KEY,
 }: {
   path: string;
   method?: "POST" | "GET";
   body?: string;
+  token?: string;
 }) =>
   fetch(`${API_URL}/v1${path}`, {
     method,
     headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body,
   }).then((r) => r.json());
 
-type AlbertCollection = {
+export type AlbertCollection = {
   id: string;
   name: string;
   type: "public" | "private";
@@ -34,13 +36,17 @@ type AlbertCollection = {
   documents: null | number;
 };
 
-export const useAlbertCollections = () => {
+export const useAlbertCollections = (albertToken: string) => {
   const [collections, setCollections] = useState<AlbertCollection[]>([]);
 
   const reloadCollections = async () => {
+    if (!albertToken) {
+      return;
+    }
     const collections = await albertApi({
       path: "/collections",
       method: "GET",
+      token: albertToken,
     });
     setCollections(collections.data || []);
   };
@@ -49,7 +55,7 @@ export const useAlbertCollections = () => {
     if (!collections.length) {
       reloadCollections();
     }
-  }, [reloadCollections]);
+  }, [reloadCollections, albertToken]);
 
   return { collections, reloadCollections };
 };
@@ -57,33 +63,28 @@ export const useAlbertCollections = () => {
 export const createCollection = ({
   name,
   model = EMBEDDING_MODEL,
+  token = ALBERT_API_KEY,
 }: {
   name: string;
   model?: string;
+  token?: string;
 }) =>
-  fetch(`${API_URL}/v1/collections`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
-      "Content-Type": "application/json",
-    },
+  albertApi({
+    path: "/collections",
     body: JSON.stringify({ name, model }),
-  })
-    .then((r) => r.json())
-    .then((d) => {
-      console.log(d);
-      return d;
-    })
-    .then((d) => d.id);
+    token,
+  }).then((d) => d.id);
 
 export const addFileToCollection = async ({
   file,
   fileName,
   collectionId,
+  token = ALBERT_API_KEY,
 }: {
   file: File;
   fileName: string;
   collectionId: string;
+  token?: string;
 }) => {
   const formData = new FormData();
   formData.append("file", file, fileName);
@@ -91,7 +92,7 @@ export const addFileToCollection = async ({
   return fetch(`${API_URL}/v1/files`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
+      Authorization: `Bearer ${token}`,
       //"Content-Type": "multipart/form-data",
     },
     body: formData,
@@ -125,28 +126,21 @@ export const addFileToCollection = async ({
 export const getSearch = ({
   collections,
   query,
+  token = ALBERT_API_KEY,
 }: {
   collections: string[];
   query: string;
+  token?: string;
 }) => {
   console.log({ url: `${API_URL}/v1/search`, query });
-  return fetch(`${API_URL}/v1/search`, {
-    cache: "no-cache",
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
-      "Content-Type": "application/json",
-    },
+  return albertApi({
+    path: "/search",
+    token,
     body: JSON.stringify({ collections, k: 6, prompt: query }),
-  })
-    .then((r) => {
-      console.log(r);
-      return r.json();
-    })
-    .catch((r) => {
-      console.error(r);
-      throw r;
-    });
+  }).catch((r) => {
+    console.error(r);
+    throw r;
+  });
 };
 
 export const getPromptWithRagResults = ({
