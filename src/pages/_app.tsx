@@ -19,6 +19,8 @@ import { init } from "@socialgouv/matomo-next";
 import pkg from "../../package.json";
 
 import "./styles.css";
+import { useSessionStorage } from "usehooks-ts";
+import Button from "@codegouvfr/react-dsfr/Button";
 
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
   interface RegisterLink {
@@ -126,7 +128,24 @@ const bottomLinks = [
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
+  const [albertApiKey, setAlbertApiKey, deleteAlbertApiKey] = useSessionStorage(
+    "albert-api-key",
+    ""
+  );
 
+  const logout =
+    (albertApiKey && (
+      <Button
+        onClick={(e) => {
+          e.preventDefault();
+          deleteAlbertApiKey();
+        }}
+        iconId="ri-login-box-line"
+      >
+        Se déconnecter
+      </Button>
+    )) ||
+    null;
   const contentSecurityPolicy = process.env.CONTENT_SECURITY_POLICY;
   return (
     <MuiDsfrThemeProvider>
@@ -192,7 +211,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             isActive: router.asPath === "/a-propos",
           },
         ]}
-        quickAccessItems={[headerFooterDisplayItem]}
+        quickAccessItems={[logout, headerFooterDisplayItem]}
       />
       <div
         className={fr.cx("fr-container", "fr-container--fluid", "fr-p-5w")}

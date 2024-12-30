@@ -19,13 +19,12 @@ const moduleExports = {
   //basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   reactStrictMode: true,
-  output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
-  },
-  //output: "export",
+  output: "export",
+  // experimental: {
+  //   serverActions: {
+  //     bodySizeLimit: "10mb",
+  //   },
+  // },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(woff2|webmanifest)$/,

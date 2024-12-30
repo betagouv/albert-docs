@@ -10,7 +10,6 @@ import type {
   InferGetServerSidePropsType,
   GetServerSideProps,
 } from "next";
-import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { useChat, UseChatHelpers } from "ai/react";
@@ -27,9 +26,12 @@ import {
   ALBERT_API_KEY,
   API_URL,
   LANGUAGE_MODEL,
-} from "../../lib/albert";
+} from "../lib/albert";
 
-import { mdxComponents } from "../../../mdx-components";
+import { mdxComponents } from "../../mdx-components";
+import { useQueryState } from "nuqs";
+import { useSessionStorage } from "usehooks-ts";
+import { InputAlbertToken } from "../components/InputAlbertToken";
 
 function MyDropzone({
   children,
@@ -125,14 +127,12 @@ export function Chat({
 const CollectionPage: NextPage<{ collectionId: string }> = ({
   collectionId,
 }) => {
-  const { query } = useRouter();
-
   // store message overrides to update messages status
   const [messagesOverrides, setMessagesOverrides] = useState<
     Record<string, any>
   >({});
-
-  const { collections, reloadCollections } = useAlbertCollections();
+  const [albertApiKey] = useSessionStorage("albert-api-key", "");
+  const { collections, reloadCollections } = useAlbertCollections(albertApiKey);
   const collection = collections.find((c) => c.id === collectionId);
 
   const overrideMessage = (id: string, data: any) => {
@@ -154,6 +154,7 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
           },
         ]);
         const uploaded = await addFileToCollection({
+          token: albertApiKey,
           file,
           fileName: file.name,
           collectionId,
@@ -179,6 +180,7 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
     const searchResults = await getSearch({
       collections: [collectionId],
       query: input,
+      token: albertApiKey,
     });
 
     const prompt = getPromptWithRagResults({ input, results: searchResults });
@@ -213,7 +215,7 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
   } = useChat({
     api: `${API_URL}/v1/chat/completions`,
     headers: {
-      Authorization: `Bearer ${ALBERT_API_KEY}`,
+      Authorization: `Bearer ${albertApiKey}`,
       "Content-Type": "application/json",
     },
     body: {
@@ -243,40 +245,44 @@ const CollectionPage: NextPage<{ collectionId: string }> = ({
 
   return (
     <div className="fr-container">
-      <MyDropzone onDrop={onDrop}>
-        <div className={fr.cx("fr-grid-row")}>
-          <Chat
-            isLoading={isLoading}
-            messages={messages.map((m) => ({
-              ...m,
-              ...(messagesOverrides[m.id] || {}),
-            }))}
-            input={input}
-            handleInputChange={handleInputChange}
-            handleSubmit={myHandleSubmit}
-            hintText={
-              collection &&
-              `Albert cherchera parmi les ${collection.documents} documents de votre collection "${collection.name}"`
-            }
-          />
-        </div>
-      </MyDropzone>
+      <InputAlbertToken />
+      {albertApiKey && (
+        <MyDropzone onDrop={onDrop}>
+          <div className={fr.cx("fr-grid-row")}>
+            <Chat
+              isLoading={isLoading}
+              messages={messages.map((m) => ({
+                ...m,
+                ...(messagesOverrides[m.id] || {}),
+              }))}
+              input={input}
+              handleInputChange={handleInputChange}
+              handleSubmit={myHandleSubmit}
+              hintText={
+                collection &&
+                `Albert cherchera parmi les ${collection.documents} documents de votre collection "${collection.name}"`
+              }
+            />
+          </div>
+        </MyDropzone>
+      )}
     </div>
   );
 };
 
-export const getServerSideProps = (async (req) => {
-  return {
-    props: {
-      collectionId: Array.isArray(req.query.id)
-        ? req.query.id[0]
-        : req.query.id || "random",
-    },
-  };
-}) satisfies GetServerSideProps<{ collectionId: string }>;
+// export const getServerSideProps = (async (req) => {
+//   return {
+//     props: {
+//       collectionId: Array.isArray(req.query.id)
+//         ? req.query.id[0]
+//         : req.query.id || "random",
+//     },
+//   };
+// }) satisfies GetServerSideProps<{ collectionId: string }>;
 
-export default function Page({
-  collectionId,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Page() {
+  const [collectionId, setCollectionId] = useQueryState("id", {
+    defaultValue: "",
+  });
   return <CollectionPage collectionId={collectionId} />;
 }
