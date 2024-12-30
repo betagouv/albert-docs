@@ -10,7 +10,6 @@ import type {
   InferGetServerSidePropsType,
   GetServerSideProps,
 } from "next";
-import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { useChat, UseChatHelpers } from "ai/react";
@@ -128,8 +127,6 @@ export function Chat({
 const CollectionPage: NextPage<{ collectionId: string }> = ({
   collectionId,
 }) => {
-  const { query } = useRouter();
-
   // store message overrides to update messages status
   const [messagesOverrides, setMessagesOverrides] = useState<
     Record<string, any>

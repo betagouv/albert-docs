@@ -69,7 +69,7 @@ const Home: NextPage = () => {
                       name,
                       token: albertApiKey,
                     });
-                    router.push(`/collection?id=${collectionId}`);
+                    router && router.push(`/collection?id=${collectionId}`);
                   }
                 },
               }}
