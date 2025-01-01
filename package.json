@@ -7,8 +7,8 @@
   "license": "Apache-2.0",
   "private": true,
   "workspaces": [
-    "app",
-    "packages/*"
+    "packages/*",
+    "app"
   ],
   "scripts": {
     "build": "yarn workspaces run build"
