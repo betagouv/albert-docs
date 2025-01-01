@@ -1,0 +1,9 @@
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+ADD . .
+
+RUN yarn && yarn build && yarn --production && yarn cache clean
+
+CMD ["npx", "tsx", "packages/api"]

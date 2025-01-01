@@ -1,12 +1,5 @@
-Dockerfile
-.dockerignore
 node_modules
-npm-debug.log
-yarn-debug.log
-README.md
-CHANGELOG.md
+app/node_modules
+app/.next
+app/out
 .next
-.vscode
-.github
-.kontinuous
-.git
