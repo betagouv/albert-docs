@@ -3,6 +3,8 @@
 .next
 node_modules
 out
+packages/albert-ts/dist/
+packages/api/dist/
 
 # dependencies
 /node_modules
