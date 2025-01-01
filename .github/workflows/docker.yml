@@ -23,7 +23,7 @@ jobs:
       - name: Build and push app
         uses: docker/build-push-action@v6
         with:
-          file: Dockerfile-app
+          file: Dockerfile.app
           push: true
           tags: |
             ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs:${{ env.GITHUB_REF_SLUG }}
@@ -36,7 +36,7 @@ jobs:
       - name: Build and push api
         uses: docker/build-push-action@v6
         with:
-          file: Dockerfile-api
+          file: Dockerfile.api
           push: true
           tags: |
             ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs/api:${{ env.GITHUB_REF_SLUG }}
