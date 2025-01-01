@@ -3,6 +3,8 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/betagouv/albert-docs/main)
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/betagouv/albert-docs)
 
+Demo: https://albert-docs.kube-dev.incubateur.net
+
 ## Packages
 
 | Name               | descriptions                                                                                                      |
