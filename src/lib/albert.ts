@@ -150,6 +150,7 @@ export const getPromptWithRagResults = ({
   input: string;
   results: {
     data: {
+      score: number;
       chunk: {
         content: string;
         metadata: {
@@ -161,21 +162,22 @@ export const getPromptWithRagResults = ({
     }[];
   };
 }) => {
-  return `Réponds à la question suivante en utilisant un format markdown bien lisible et en te basant sur le contexte fourni uniquement. Cite tes sources en conclusion 
+  return `Réponds à la question suivante en utilisant un format markdown bien lisible et en te basant sur le contexte ci-dessous uniquement et en fournissant toutes les informations nécessaires.Commence directement par ta réponse et cite tes sources en conclusion;
 
 ## Question: ${input}
           
 ## Contexte
-          
+
+## Sources:
 ${results.data
   .map(
-    (hit) => `[${
+    (hit) => ` - [${
       (hit.chunk.metadata.title &&
         hit.chunk.metadata.title.replace(/^#+/, "")) ||
       hit.chunk.metadata.document_name
     }](https://espace-membre.incubateur.net/doc/${
       hit.chunk.metadata.collection_id
-    }/${hit.chunk.metadata.document_name})
+    }/${hit.chunk.metadata.document_name}) (score=${hit.score})
 ${hit.chunk.content}\n\n`
   )
   .join("\n")}`;

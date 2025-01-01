@@ -29,9 +29,11 @@ export const mdxComponents = {
       const headers = head.props.children.props.children.map(
         (child: any) => child.props.children
       );
-      const data = body.props.children.map((row: any) =>
-        row.props.children.map((cell: any) => cell.props.children)
-      );
+      const data = Array.isArray(body.props.children)
+        ? body.props.children.map((row: any) =>
+            row.props.children.map((cell: any) => cell.props.children)
+          )
+        : [body.props.children.props.children];
       return <Table headers={headers} data={data} />;
     }
     return <div></div>;
