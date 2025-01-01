@@ -22,6 +22,10 @@ app.get("/", (req, res) => {
   res.status(404).send("Not found");
 });
 
+app.get("/healthz", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
