@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true, // Generate .d.ts files
+    "sourceMap": true, // Generate source maps
+
+    // Module settings
+    "module": "esnext",
+    "target": "ES6",
+
+    // Type checking
+    "strict": true
+  },
+  "include": ["src/**/*", "index.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -30,4 +30,5 @@ jobs:
           yarn build
       - name: Test code
         run: |
+          cd app
           yarn test

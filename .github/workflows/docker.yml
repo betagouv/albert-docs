@@ -20,14 +20,28 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Build and push
+      - name: Build and push app
         uses: docker/build-push-action@v6
         with:
+          file: Dockerfile-app
           push: true
           tags: |
             ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs:${{ env.GITHUB_REF_SLUG }}
             ${{ github.ref_name == 'main' && format('ghcr.io/{0}/albert-docs:latest', env.GITHUB_REPOSITORY_OWNER_PART_SLUG) || '' }}
           cache-from: type=registry,ref=ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs:${{ env.GITHUB_REF_SLUG }}
+          cache-to: type=inline
+          build-args: |
+            PRODUCTION="true"
+            GITHUB_SHA=${{ github.sha }}
+      - name: Build and push api
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile-api
+          push: true
+          tags: |
+            ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs/api:${{ env.GITHUB_REF_SLUG }}
+            ${{ github.ref_name == 'main' && format('ghcr.io/{0}/albert-docs/api:latest', env.GITHUB_REPOSITORY_OWNER_PART_SLUG) || '' }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}/albert-docs/api:${{ env.GITHUB_REF_SLUG }}
           cache-to: type=inline
           build-args: |
             PRODUCTION="true"

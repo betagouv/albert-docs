@@ -3,7 +3,13 @@
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/betagouv/albert-docs/main)
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/betagouv/albert-docs)
 
-Minimalist UI for [albert-API](https://github.com/etalab-ia/albert-api/). Drop documents and query them with LLM.
+## Packages
+
+| Name               | descriptions                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| app                | Minimalist UI for [albert-API](https://github.com/etalab-ia/albert-api/). Drop documents and query them with LLM. |
+| packages/albert-ts | Browser/Node utils for albert API                                                                                 |
+| packages/api       | A basic API to query a collection                                                                                 |
 
 ## Start
 
